@@ -15,7 +15,8 @@ except ImportError:
 
 logger = logging.getLogger("campuslens.ai")
 
-DEFAULT_GEMMA_MODEL = "gemma-4-31b-it"
+DEFAULT_GEMMA_MODEL = "gemma-4-26b-a4b-it"
+FALLBACK_GEMMA_MODEL = "gemma-4-26b-a4b-it"
 
 SYSTEM_INSTRUCTION = """You are CampusLens, an expert college notice and circular analyzer designed to help students understand campus documents with complete precision.
 
@@ -141,8 +142,6 @@ async def analyze_notice_image(image_bytes: bytes, mime_type: str) -> NoticeAnal
     
     config = types.GenerateContentConfig(
         system_instruction=SYSTEM_INSTRUCTION,
-        temperature=0.1,  # Low temperature for deterministic, factual parsing
-        response_mime_type="application/json",
     )
     
     try:
@@ -154,10 +153,24 @@ async def analyze_notice_image(image_bytes: bytes, mime_type: str) -> NoticeAnal
         )
     except APIError as exc:
         error_msg = str(exc)
-        logger.error(f"Gemma API error: {error_msg}")
-        if "RESOURCE_EXHAUSTED" in error_msg or "429" in error_msg or "quota" in error_msg.lower():
+        logger.error(f"Gemma API error with model {model_name}: {error_msg}")
+        
+        # If upstream Google endpoint returns 500 INTERNAL on 31B, retry with 26b-a4b-it
+        if "500" in error_msg and model_name != FALLBACK_GEMMA_MODEL:
+            logger.info(f"Retrying with fallback Gemma 4 model: {FALLBACK_GEMMA_MODEL}")
+            try:
+                response = await client.aio.models.generate_content(
+                    model=FALLBACK_GEMMA_MODEL,
+                    contents=contents,
+                    config=config,
+                )
+            except Exception as retry_exc:
+                logger.error(f"Fallback Gemma model failed: {retry_exc}")
+                raise GemmaAPIError(f"Hosted Gemma 4 service returned an error: {str(retry_exc)}") from retry_exc
+        elif "RESOURCE_EXHAUSTED" in error_msg or "429" in error_msg or "quota" in error_msg.lower():
             raise GemmaQuotaError("Gemma API quota limit exceeded. Please wait a minute and retry.") from exc
-        raise GemmaAPIError(f"Hosted Gemma 4 service returned an error: {error_msg}") from exc
+        else:
+            raise GemmaAPIError(f"Hosted Gemma 4 service returned an error: {error_msg}") from exc
     except Exception as exc:
         logger.error(f"Unexpected error while communicating with Gemma API: {exc}")
         raise GemmaAPIError(f"Failed to communicate with Gemma 4 service: {str(exc)}") from exc
