@@ -7,7 +7,16 @@
 [![Backend: FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688.svg?logo=fastapi)](https://fastapi.tiangolo.com)
 [![Frontend: React + Vite](https://img.shields.io/badge/Frontend-React_19_|_Vite-61DAFB.svg?logo=react)](https://react.dev)
 [![AI: Hosted Gemma 4](https://img.shields.io/badge/AI-Hosted_Gemma_4-8B5CF6.svg?logo=google)](https://ai.google.dev)
-[![Deployment: Render + Vercel](https://img.shields.io/badge/Deploy-Render_|_Vercel-black.svg)](https://render.com)
+[![Deployment: Vercel](https://img.shields.io/badge/Deploy-Vercel_Serverless-black.svg?logo=vercel)](https://campuslens-portal.vercel.app)
+[![Live Production: Online](https://img.shields.io/badge/Production-Live-emerald.svg)](https://campuslens-portal.vercel.app)
+
+---
+
+## 🌐 Live Production Deployment
+
+- **Live Web Application**: **[https://campuslens-portal.vercel.app](https://campuslens-portal.vercel.app)**
+- **Serverless API Health Check**: **[https://campuslens-portal.vercel.app/api/health](https://campuslens-portal.vercel.app/api/health)**
+- **Public GitHub Repository**: **[https://github.com/SAI-RAKSHITH7/campuslens](https://github.com/SAI-RAKSHITH7/campuslens)**
 
 ---
 
