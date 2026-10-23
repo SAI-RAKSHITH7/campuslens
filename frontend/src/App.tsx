@@ -18,7 +18,21 @@ import type {
   ActionItem,
 } from './types'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+// Dynamically resolve API URL: uses dedicated host if configured, or same-origin serverless on Vercel
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL &&
+  !import.meta.env.VITE_API_BASE_URL.includes('localhost')
+    ? import.meta.env.VITE_API_BASE_URL
+    : typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000')
+    : ''
+
+const getApiUrl = (endpoint: string) => {
+  if (API_BASE_URL) {
+    return `${API_BASE_URL}${endpoint}`
+  }
+  return `/api${endpoint}`
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('scanner')
@@ -50,7 +64,7 @@ export default function App() {
         setBackendStatus('checking')
         const ctrl = new AbortController()
         const timer = setTimeout(() => ctrl.abort(), 6000)
-        const res = await fetch(`${API_BASE_URL}/health`, { signal: ctrl.signal })
+        const res = await fetch(getApiUrl('/health'), { signal: ctrl.signal })
         clearTimeout(timer)
         if (res.ok) {
           setBackendStatus('healthy')
@@ -81,7 +95,7 @@ export default function App() {
     setCurrentImageSrc(localUrl)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/analyze`, {
+      const response = await fetch(getApiUrl('/analyze'), {
         method: 'POST',
         body: formData,
       })
