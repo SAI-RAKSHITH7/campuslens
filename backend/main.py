@@ -10,14 +10,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from PIL import Image, UnidentifiedImageError
 
-from .ai_service import (
-    DEFAULT_GEMMA_MODEL,
-    GemmaAPIError,
-    GemmaConfigurationError,
-    GemmaQuotaError,
-    analyze_notice_image,
-)
-from .models import NoticeAnalysisResponse
+try:
+    from .ai_service import (
+        DEFAULT_GEMMA_MODEL,
+        GemmaAPIError,
+        GemmaConfigurationError,
+        GemmaQuotaError,
+        analyze_notice_image,
+    )
+    from .models import NoticeAnalysisResponse
+except ImportError:
+    from ai_service import (
+        DEFAULT_GEMMA_MODEL,
+        GemmaAPIError,
+        GemmaConfigurationError,
+        GemmaQuotaError,
+        analyze_notice_image,
+    )
+    from models import NoticeAnalysisResponse
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -177,3 +187,9 @@ async def analyze_notice(
                 "detail": "An internal error occurred while processing the notice. Please try again.",
             },
         )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+

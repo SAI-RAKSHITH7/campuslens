@@ -8,7 +8,10 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
-from .models import NoticeAnalysisResponse, CalendarEvent
+try:
+    from .models import NoticeAnalysisResponse, CalendarEvent
+except ImportError:
+    from models import NoticeAnalysisResponse, CalendarEvent
 
 logger = logging.getLogger("campuslens.ai")
 
